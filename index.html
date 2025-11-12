@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Downloader - AcdsAPIs</title>
+  <title>TikId Multi Downloader - AcdsAPIs</title>
   <link id="icon" rel="icon" href="https://image.pollinations.ai/prompt/Buat%20gambar%20youtube%20download%20yaitu%20Y7%20dengan%20desain%203d%2C%20warna%20putih%20merah%20domainan%20merah%20seperti%20logo%20play%20tapi%20lebih%20rapih?seed=1756394813856290123&enhance=true&nologo=true&model=flux" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -239,20 +239,62 @@
 
     .download-btn {
       display: inline-block;
-      margin-top: 20px;
-      padding: 14px 28px;
+      margin: 10px 8px;
+      padding: 12px 24px;
       background: var(--primary);
       color: white;
       border-radius: 10px;
       text-decoration: none;
       font-weight: 500;
       transition: all 0.3s;
+      min-width: 160px;
     }
 
     .download-btn:hover {
       background: #d81b60;
       transform: translateY(-2px);
       box-shadow: 0 6px 15px rgba(233, 30, 99, 0.3);
+    }
+
+    .download-btn.secondary {
+      background: var(--secondary);
+    }
+
+    .download-btn.secondary:hover {
+      background: #0b7dda;
+    }
+
+    .thumbnail {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 12px;
+      margin: 15px auto;
+      display: block;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .image-item {
+      text-align: center;
+    }
+
+    .image-item img {
+      width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .image-item a {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.85rem;
+      color: var(--primary);
     }
 
     .tutorial {
@@ -314,32 +356,14 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Responsive styles */
     @media (max-width: 768px) {
-      .logo {
-        font-size: 2.2rem;
-      }
-      
-      h1 {
-        font-size: 1.8rem;
-      }
-      
-      h2 {
-        font-size: 1.4rem;
-      }
-      
-      .card {
-        padding: 20px;
-      }
-      
-      .btn {
-        padding: 10px 20px;
-        font-size: 0.95rem;
-      }
-      
-      .steps {
-        grid-template-columns: 1fr;
-      }
+      .logo { font-size: 2.2rem; }
+      h1 { font-size: 1.8rem; }
+      h2 { font-size: 1.4rem; }
+      .card { padding: 20px; }
+      .btn { padding: 10px 20px; font-size: 0.95rem; }
+      .steps { grid-template-columns: 1fr; }
+      .image-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -348,14 +372,14 @@
   
   <div class="container">
     <header>
-      <div class="logo">YTDownload</div>
-      <div class="tagline" id="tagline">YouTube Downloader by AcdsAPIs</div>
-      <div class="owner">dikembangkan oleh adan</div>
+      <div class="logo">TikId</div>
+      <div class="tagline" id="tagline">Multi Downloader</div>
+      <div class="owner">presented by acds</div>
     </header>
     
     <div class="card">
-      <h1 id="title">YouTube Downloader</h1>
-      <p id="desc">Masukkan URL YouTube dan pilih format untuk mengunduh audio atau video.</p>
+      <h1 id="title">Multi Downloader</h1>
+      <p id="desc">Masukkan URL YouTube atau TikTok untuk mengunduh video, audio, atau gambar.</p>
       
       <div class="controls">
         <button class="btn btn-toggle" id="langToggle">
@@ -368,11 +392,19 @@
       
       <form id="downloadForm">
         <div class="form-group">
-          <label for="ytUrl" id="urlLabel">URL YouTube</label>
-          <input type="text" id="ytUrl" placeholder="Masukkan URL YouTube..." required>
+          <label for="platform" id="platformLabel">Platform</label>
+          <select id="platform">
+            <option value="youtube">YouTube</option>
+            <option value="tiktok">TikTok</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="ytUrl" id="urlLabel">URL</label>
+          <input type="text" id="ytUrl" placeholder="Masukkan URL..." required>
         </div>
         
-        <div class="form-group">
+        <div class="form-group" id="formatGroup">
           <label for="format" id="formatLabel">Format</label>
           <select id="format">
             <option value="mp3">Audio (MP3)</option>
@@ -387,10 +419,10 @@
       
       <div class="result" id="resultBox">
         <h2 id="resTitle"></h2>
-        <p><span id="resDuration"></span></p>
-        <a id="resDownload" class="download-btn" target="_blank">
-          <i class="fas fa-download"></i> <span id="downloadBtnText">Download</span>
-        </a>
+        <img id="resThumbnail" class="thumbnail" style="display:none;">
+        <p id="resDuration"></p>
+        <div id="downloadOptions"></div>
+        <div id="imageGrid" class="image-grid" style="display:none;"></div>
       </div>
     </div>
     
@@ -399,36 +431,40 @@
       <div class="steps">
         <div class="step">
           <div class="step-number">1</div>
-          <h3 id="step1Title">Salin URL</h3>
-          <p id="step1Desc">Salin URL video YouTube yang ingin Anda download</p>
+          <h3 id="step1Title">Pilih Platform</h3>
+          <p id="step1Desc">Pilih YouTube atau TikTok</p>
         </div>
         <div class="step">
           <div class="step-number">2</div>
-          <h3 id="step2Title">Pilih Format</h3>
-          <p id="step2Desc">Pilih format MP3 untuk audio atau MP4 untuk video</p>
+          <h3 id="step2Title">Salin URL</h3>
+          <p id="step2Desc">Salin URL konten yang ingin diunduh</p>
         </div>
         <div class="step">
           <div class="step-number">3</div>
           <h3 id="step3Title">Download</h3>
-          <p id="step3Desc">Klik tombol download dan tunggu prosesnya selesai</p>
+          <p id="step3Desc">Pilih format dan klik download</p>
         </div>
       </div>
     </div>
     
     <footer>
-      <p>YTDownload &copy; 2025 - Powered by AcdsAPIs</p>
+      <p>TikId Multi Downloader © 2024 - Powered by acds-team</p>
     </footer>
   </div>
 
   <script>
     // DOM Elements
     const form = document.getElementById("downloadForm");
+    const platformSelect = document.getElementById("platform");
     const ytUrl = document.getElementById("ytUrl");
     const format = document.getElementById("format");
+    const formatGroup = document.getElementById("formatGroup");
     const resultBox = document.getElementById("resultBox");
     const resTitle = document.getElementById("resTitle");
+    const resThumbnail = document.getElementById("resThumbnail");
     const resDuration = document.getElementById("resDuration");
-    const resDownload = document.getElementById("resDownload");
+    const downloadOptions = document.getElementById("downloadOptions");
+    const imageGrid = document.getElementById("imageGrid");
 
     const langToggle = document.getElementById("langToggle");
     const langText = document.getElementById("langText");
@@ -438,10 +474,10 @@
     const title = document.getElementById("title");
     const desc = document.getElementById("desc");
     const tagline = document.getElementById("tagline");
+    const platformLabel = document.getElementById("platformLabel");
     const urlLabel = document.getElementById("urlLabel");
     const formatLabel = document.getElementById("formatLabel");
     const downloadText = document.getElementById("downloadText");
-    const downloadBtnText = document.getElementById("downloadBtnText");
     const tutorialTitle = document.getElementById("tutorialTitle");
     const step1Title = document.getElementById("step1Title");
     const step1Desc = document.getElementById("step1Desc");
@@ -455,42 +491,59 @@
     // Language content
     const content = {
       id: {
-        title: "YouTube Downloader",
-        tagline: "YouTube Downloader by AcdsAPIs",
-        desc: "Masukkan URL YouTube dan pilih format untuk mengunduh audio atau video.",
-        urlLabel: "URL YouTube",
+        title: "Multi Downloader",
+        tagline: "Multi Downloader",
+        desc: "Masukkan URL YouTube atau TikTok untuk mengunduh video, audio, atau gambar.",
+        platformLabel: "Platform",
+        urlLabel: "URL",
         formatLabel: "Format",
         downloadText: "Download",
-        downloadBtnText: "Download",
         tutorialTitle: "Cara Menggunakan",
-        step1Title: "Salin URL",
-        step1Desc: "Salin URL video YouTube yang ingin Anda download",
-        step2Title: "Pilih Format",
-        step2Desc: "Pilih format MP3 untuk audio atau MP4 untuk video",
+        step1Title: "Pilih Platform",
+        step1Desc: "Pilih YouTube atau TikTok",
+        step2Title: "Salin URL",
+        step2Desc: "Salin URL konten yang ingin diunduh",
         step3Title: "Download",
-        step3Desc: "Klik tombol download dan tunggu prosesnya selesai",
+        step3Desc: "Pilih format dan klik download",
         langText: "日本語",
-        modeText: "Light Mode"
+        modeText: "Light Mode",
+        noWm: "Tanpa Watermark",
+        withWm: "Dengan Watermark",
+        hd: "HD",
+        images: "Unduh Gambar",
+        audio: "Audio"
       },
       jp: {
-        title: "YouTube ダウンローダー",
-        tagline: "AcdsAPIsによるYouTubeダウンローダー",
-        desc: "YouTube の URL を入力して、形式を選択し、音声または動画をダウンロードしてください。",
-        urlLabel: "YouTubeのURL",
+        title: "マルチダウンローダー",
+        tagline: "Hookrest APIによるマルチダウンローダー",
+        desc: "YouTubeまたはTikTokのURLを入力して、動画、音声、または画像をダウンロードしてください。",
+        platformLabel: "プラットフォーム",
+        urlLabel: "URL",
         formatLabel: "フォーマット",
         downloadText: "ダウンロード",
-        downloadBtnText: "ダウンロード",
         tutorialTitle: "使い方",
-        step1Title: "URLをコピー",
-        step1Desc: "ダウンロードしたいYouTube動画のURLをコピーしてください",
-        step2Title: "形式を選択",
-        step2Desc: "音声の場合はMP3、動画の場合はMP4を選択してください",
+        step1Title: "プラットフォームを選択",
+        step1Desc: "YouTubeまたはTikTokを選択",
+        step2Title: "URLをコピー",
+        step2Desc: "ダウンロードしたいコンテンツのURLをコピー",
         step3Title: "ダウンロード",
-        step3Desc: "ダウンロードボタンをクリックして処理が完了するまでお待ちください",
+        step3Desc: "形式を選択してダウンロードボタンをクリック",
         langText: "Indonesia",
-        modeText: "ライトモード"
+        modeText: "ライトモード",
+        noWm: "ウォーターマークなし",
+        withWm: "ウォーターマークあり",
+        hd: "HD",
+        images: "画像をダウンロード",
+        audio: "音声"
       }
     };
+
+    // Update format options based on platform
+    platformSelect.addEventListener("change", () => {
+      const platform = platformSelect.value;
+      formatGroup.style.display = platform === "youtube" ? "block" : "none";
+      updateContent();
+    });
 
     // Switch Bahasa
     langToggle.addEventListener("click", () => {
@@ -498,121 +551,179 @@
       updateContent();
     });
 
-    // Update content based on language
+    // Update content
     function updateContent() {
-      const currentContent = content[lang];
-      title.textContent = currentContent.title;
-      tagline.textContent = currentContent.tagline;
-      desc.textContent = currentContent.desc;
-      urlLabel.textContent = currentContent.urlLabel;
-      formatLabel.textContent = currentContent.formatLabel;
-      downloadText.textContent = currentContent.downloadText;
-      downloadBtnText.textContent = currentContent.downloadBtnText;
-      tutorialTitle.textContent = currentContent.tutorialTitle;
-      step1Title.textContent = currentContent.step1Title;
-      step1Desc.textContent = currentContent.step1Desc;
-      step2Title.textContent = currentContent.step2Title;
-      step2Desc.textContent = currentContent.step2Desc;
-      step3Title.textContent = currentContent.step3Title;
-      step3Desc.textContent = currentContent.step3Desc;
-      langText.textContent = currentContent.langText;
-      modeText.textContent = currentContent.modeText;
+      const c = content[lang];
+      title.textContent = c.title;
+      tagline.textContent = c.tagline;
+      desc.textContent = c.desc;
+      platformLabel.textContent = c.platformLabel;
+      urlLabel.textContent = c.urlLabel;
+      formatLabel.textContent = c.formatLabel;
+      downloadText.textContent = c.downloadText;
+      tutorialTitle.textContent = c.tutorialTitle;
+      step1Title.textContent = c.step1Title;
+      step1Desc.textContent = c.step1Desc;
+      step2Title.textContent = c.step2Title;
+      step2Desc.textContent = c.step2Desc;
+      step3Title.textContent = c.step3Title;
+      step3Desc.textContent = c.step3Desc;
+      langText.textContent = c.langText;
+      modeText.textContent = document.body.classList.contains("light-mode") 
+        ? (lang === "id" ? "Dark Mode" : "ダークモード")
+        : c.modeText;
     }
 
-    // Switch Dark/Light mode
+    // Dark/Light Mode
     modeToggle.addEventListener("click", () => {
       document.body.classList.toggle("light-mode");
-      if (document.body.classList.contains("light-mode")) {
-        modeIcon.classList.remove("fa-moon");
-        modeIcon.classList.add("fa-sun");
-        modeText.textContent = lang === "id" ? "Dark Mode" : "ダークモード";
-      } else {
-        modeIcon.classList.remove("fa-sun");
-        modeIcon.classList.add("fa-moon");
-        modeText.textContent = lang === "id" ? "Light Mode" : "ライトモード";
-      }
+      const isLight = document.body.classList.contains("light-mode");
+      modeIcon.classList.toggle("fa-moon", !isLight);
+      modeIcon.classList.toggle("fa-sun", isLight);
+      modeText.textContent = isLight 
+        ? (lang === "id" ? "Dark Mode" : "ダークモード")
+        : (lang === "id" ? "Light Mode" : "ライトモード");
     });
 
     // Handle Submit
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      let url = ytUrl.value.trim();
-      let type = format.value;
+      const url = ytUrl.value.trim();
+      const platform = platformSelect.value;
+      const type = format.value;
 
       if (!url) return;
 
-      // Validasi dasar: pastikan URL mengandung youtube.com atau youtu.be
-      if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
-        resTitle.textContent = lang === "id" ? "URL harus berisi 'youtube.com' atau 'youtu.be'!" : "URLには'youtube.com'または'youtu.be'を含める必要があります！";
-        resDuration.textContent = "";
-        resDownload.style.display = "none";
-        resultBox.style.display = "block";
+      // Validate URL
+      const validDomains = platform === "youtube" 
+        ? ['youtube.com', 'youtu.be'] 
+        : ['tiktok.com', 'vt.tiktok.com'];
+      if (!validDomains.some(d => url.includes(d))) {
+        showError(lang === "id" 
+          ? `URL harus dari ${platform === "youtube" ? "YouTube" : "TikTok"}!` 
+          : `URLは${platform === "youtube" ? "YouTube" : "TikTok"}である必要があります！`);
         return;
       }
 
-      // Tampilkan loading state
       const submitBtn = form.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
       submitBtn.disabled = true;
       resultBox.style.display = "none";
+      downloadOptions.innerHTML = "";
+      imageGrid.innerHTML = "";
+      resThumbnail.style.display = "none";
 
-      // Gunakan proxy CORS
       const proxyUrl = 'https://api.allorigins.win/raw?url=';
-      let apiUrl;
-      if (type === "mp3") {
-        apiUrl = `https://api.acodes.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}&apikey=acdsapis`;
-      } else {
-        apiUrl = `https://api.acodes.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}&apikey=acdsapis`;
-      }
+      let apiUrl = "";
 
       try {
-        const res = await fetch(proxyUrl + encodeURIComponent(apiUrl));
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+        if (platform === "youtube") {
+          apiUrl = type === "mp3" 
+            ? `https://hookrest.my.id/dowload/ytmp3?url=${encodeURIComponent(url)}`
+            : `https://hookrest.my.id/dowload/ytmp4?url=${encodeURIComponent(url)}`;
+        } else {
+          apiUrl = `https://api-hookrest-danz.biz.id/download/tiktok?url=${encodeURIComponent(url)}`;
         }
-        
+
+        const res = await fetch(proxyUrl + encodeURIComponent(apiUrl));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         const data = await res.json();
 
-        if (data.status) {
-          if (type === "mp3") {
-            resTitle.textContent = data.meta.title || "Audio YouTube";
-            resDuration.textContent = `Durasi: ${data.meta.duration ? data.meta.duration.toFixed(2) : 'N/A'} detik | Ukuran: ${data.meta.size || 'N/A'}`;
-            resDownload.href = data.download.url;
-            resDownload.textContent = `Download MP3`;
+        if ((platform === "youtube" && data.status) || (platform === "tiktok" && data.status)) {
+          if (platform === "youtube") {
+            handleYouTubeResult(data, type);
           } else {
-            resTitle.textContent = data.download.title || "Video YouTube";
-            resDuration.textContent = `Kualitas: ${data.download.quality || 'N/A'} | MIME: ${data.download.mimeType ? data.download.mimeType.split(';')[0] : 'video/mp4'}`;
-            resDownload.href = data.download.url;
-            resDownload.textContent = `Download MP4`;
+            handleTikTokResult(data.result.data);
           }
-          resultBox.style.display = "block";
         } else {
-          resTitle.textContent = lang === "id" ? 
-            `Error: ${data.message || 'Gagal memproses permintaan'}` : 
-            `エラー: ${data.message || 'リクエストの処理に失敗しました'}`;
-          resDuration.textContent = "";
-          resDownload.style.display = "none";
-          resultBox.style.display = "block";
+          showError(data.message || (lang === "id" ? "Gagal memproses" : "処理に失敗しました"));
         }
       } catch (err) {
-        console.error('Error detail:', err);
-        resTitle.textContent = lang === "id" ? 
-          "Kesalahan Koneksi!" : 
-          "接続エラー！";
-        resDuration.textContent = lang === "id" ? 
-          "Periksa koneksi internet atau coba lagi nanti" : 
-          "インターネット接続を確認するか、後でもう一度お試しください";
-        resDownload.style.display = "none";
-        resultBox.style.display = "block";
+        console.error(err);
+        showError(lang === "id" ? "Koneksi gagal!" : "接続エラー！");
       } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
       }
     });
 
-    // Particle Background
+    function handleYouTubeResult(data, type) {
+      resTitle.textContent = data.meta?.title || (type === "mp3" ? "Audio YouTube" : "Video YouTube");
+      resDuration.textContent = type === "mp3" 
+        ? `Durasi: ${data.meta?.duration?.toFixed(2) || 'N/A'} detik | Ukuran: ${data.meta?.size || 'N/A'}`
+        : `Kualitas: ${data.download?.quality || 'N/A'} | MIME: ${data.download?.mimeType?.split(';')[0] || 'video/mp4'}`;
+      
+      const btn = createDownloadBtn(data.download.url, type === "mp3" ? "Download MP3" : "Download MP4");
+      downloadOptions.appendChild(btn);
+      resultBox.style.display = "block";
+    }
+
+    function handleTikTokResult(data) {
+      resTitle.textContent = data.title || "TikTok Media";
+      resDuration.textContent = `Durasi: ${data.duration || 0}s | Author: ${data.author?.nickname || 'Unknown'}`;
+      
+      if (data.cover) {
+        resThumbnail.src = data.cover;
+        resThumbnail.style.display = "block";
+      }
+
+      downloadOptions.innerHTML = "";
+      const c = content[lang];
+
+      // Video downloads
+      if (data.play) {
+        downloadOptions.appendChild(createDownloadBtn(data.play, `Video ${c.noWm}`));
+      }
+      if (data.wmplay) {
+        downloadOptions.appendChild(createDownloadBtn(data.wmplay, `Video ${c.withWm}`, "secondary"));
+      }
+      if (data.hdplay && data.hdplay !== data.play) {
+        downloadOptions.appendChild(createDownloadBtn(data.hdplay, `Video ${c.hd}`));
+      }
+      if (data.music) {
+        downloadOptions.appendChild(createDownloadBtn(data.music, `${c.audio} (MP3)`));
+      }
+
+      // Images (slideshow)
+      if (data.images && data.images.length > 0) {
+        imageGrid.style.display = "grid";
+        data.images.forEach((img, i) => {
+          const div = document.createElement("div");
+          div.className = "image-item";
+          div.innerHTML = `
+            <img src="${img}" alt="Image ${i+1}">
+            <a href="${img}" download>Download #${i+1}</a>
+          `;
+          imageGrid.appendChild(div);
+        });
+      } else {
+        imageGrid.style.display = "none";
+      }
+
+      resultBox.style.display = "block";
+    }
+
+    function createDownloadBtn(url, text, variant = "") {
+      const a = document.createElement("a");
+      a.href = url;
+      a.className = `download-btn ${variant}`;
+      a.target = "_blank";
+      a.innerHTML = `<i class="fas fa-download"></i> ${text}`;
+      return a;
+    }
+
+    function showError(msg) {
+      resTitle.textContent = msg;
+      resDuration.textContent = lang === "id" ? "Coba lagi dengan URL lain" : "別のURLでお試しください";
+      downloadOptions.innerHTML = "";
+      imageGrid.innerHTML = "";
+      resThumbnail.style.display = "none";
+      resultBox.style.display = "block";
+    }
+
+    // Particle Background (unchanged)
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
     let particlesArray = [];
@@ -625,46 +736,34 @@
 
     class Particle {
       constructor(x, y, dx, dy, size, color) {
-        this.x = x;
-        this.y = y;
-        this.dx = dx;
-        this.dy = dy;
-        this.size = size;
-        this.color = color;
+        this.x = x; this.y = y; this.dx = dx; this.dy = dy;
+        this.size = size; this.color = color;
       }
-
       draw() {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
       }
-
       update() {
         if (this.x > canvas.width || this.x < 0) this.dx = -this.dx;
         if (this.y > canvas.height || this.y < 0) this.dy = -this.dy;
-        this.x += this.dx;
-        this.y += this.dy;
+        this.x += this.dx; this.y += this.dy;
         this.draw();
       }
     }
 
     function init() {
       particlesArray = [];
-      let numberOfParticles = Math.min(
-        (canvas.height * canvas.width) / 15000, 
-        window.innerWidth < 768 ? 30 : 100
-      );
-      
-      for (let i = 0; i < numberOfParticles; i++) {
-        let size = window.innerWidth < 768 ? 1.5 : 2;
-        let x = Math.random() * (innerWidth - size * 2);
-        let y = Math.random() * (innerHeight - size * 2);
-        let dx = (Math.random() - 0.5) * (window.innerWidth < 768 ? 0.8 : 1);
-        let dy = (Math.random() - 0.5) * (window.innerWidth < 768 ? 0.8 : 1);
-        let color = document.body.classList.contains('light-mode') 
-          ? 'rgba(233, 30, 99, 0.6)' 
-          : 'rgba(33, 150, 243, 0.6)';
+      const num = Math.min((canvas.width * canvas.height) / 15000, window.innerWidth < 768 ? 30 : 100);
+      for (let i = 0; i < num; i++) {
+        const size = window.innerWidth < 768 ? 1.5 : 2;
+        const x = Math.random() * (innerWidth - size * 2);
+        const y = Math.random() * (innerHeight - size * 2);
+        const dx = (Math.random() - 0.5) * (window.innerWidth < 768 ? 0.8 : 1);
+        const dy = (Math.random() - 0.5) * (window.innerWidth < 768 ? 0.8 : 1);
+        const color = document.body.classList.contains('light-mode') 
+          ? 'rgba(233, 30, 99, 0.6)' : 'rgba(33, 150, 243, 0.6)';
         particlesArray.push(new Particle(x, y, dx, dy, size, color));
       }
     }
@@ -672,12 +771,10 @@
     function connect() {
       for (let a = 0; a < particlesArray.length; a++) {
         for (let b = a; b < particlesArray.length; b++) {
-          let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) 
-                       + ((particlesArray[a].y - particlesArray[b].y) ** 2);
+          const distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
           if (distance < (canvas.width/7) * (canvas.height/7)) {
             ctx.strokeStyle = document.body.classList.contains('light-mode') 
-              ? 'rgba(233, 30, 99, 0.2)' 
-              : 'rgba(33, 150, 243, 0.2)';
+              ? 'rgba(233, 30, 99, 0.2)' : 'rgba(33, 150, 243, 0.2)';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
@@ -690,37 +787,25 @@
 
     function animate() {
       ctx.clearRect(0, 0, innerWidth, innerHeight);
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-      }
+      particlesArray.forEach(p => p.update());
       connect();
       animationId = requestAnimationFrame(animate);
     }
 
     function startAnimation() {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-      setupCanvas();
-      init();
-      animate();
+      if (animationId) cancelAnimationFrame(animationId);
+      setupCanvas(); init(); animate();
     }
 
-    setupCanvas();
-    init();
-    animate();
-
-    window.addEventListener('resize', function() {
-      startAnimation();
+    setupCanvas(); init(); animate();
+    window.addEventListener('resize', startAnimation);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) cancelAnimationFrame(animationId);
+      else animate();
     });
 
-    document.addEventListener('visibilitychange', function() {
-      if (document.hidden) {
-        cancelAnimationFrame(animationId);
-      } else {
-        animate();
-      }
-    });
+    // Init
+    updateContent();
   </script>
 </body>
 </html>
